@@ -1,0 +1,13 @@
+To run the web project and edit it, you need two programs
+A.Notepad ++
+B. XAMPP Control Panel
+
+Notepad++: is totally enough to run the code program file, which is University Book.html, static mock data for the website, and then you can play on any browser, such as Microsoft Edge or Chrome.
+
+XAMPP: It is necessary to run the code of PHP and SQL files because it is dynamic mock data, and first need to download and install it from the official website: https://www.apachefriends.org/download_success.html
+
+In addition, it must be installed Apache and MySQL modules of its extension and start it, then press on admin to get access for the PHP part and SQL, but first you should put the project folder containing in the root directory address, which is C:\xampp\htdocs
+
+Important Note: to get access to the login account, the username and the password are:
+Ahmed 
+2210182
