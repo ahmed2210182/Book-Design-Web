@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"> <!-- Character encoding -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive viewport -->
+    <title>University Used Book Marketplace</title> <!-- Page title -->
+    <style>
+        /* Basic styles for body */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('images/library.jpg'); /* Set background image */
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+
+        /* Header styles */
+        header {
+            background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        /* Container styling */
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        /* Book listings container */
+        .book-listings, .external-books {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        /* Single book card */
+        .listing, .external-book {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            width: 200px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        /* Book image style */
+        .listing img, .external-book img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        /* Heading styles */
+        h2, h3 {
+            color: red; /* Red heading text */
+        }
+
+        /* Button container for logos */
+        .logo-btn {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Anchor styles inside logo button */
+        .logo-btn a {
+            display: block;
+            width: 30px;
+            height: 30px;
+            margin: 0 10px;
+        }
+
+        /* Image size inside button */
+        .logo-btn img {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* General button styling */
+        button {
+            padding: 5px 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #218838; /* Darker green on hover */
+        }
+
+        /* Modal background styling */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Modal content box */
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+        }
+
+        /* Form inputs inside modal */
+        .modal-content input, .modal-content textarea, .modal-content select {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>University Used Book Marketplace</h1> <!-- Main title -->
+</header>
+
+<div class="container">
+    <!-- Login Form -->
+    <div id="loginSection">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Enter Username" /> <!-- Username field -->
+        <input type="password" id="password" placeholder="Enter Password" /> <!-- Password field -->
+        <button onclick="login()">Login</button> <!-- Login button -->
+        <p id="loginMessage" style="color: red; display: none;">Invalid credentials. Please try again.</p> <!-- Error message -->
+    </div>
+
+    <!-- Book Listings Section -->
+    <div id="bookListingsSection" style="display: none;">
+        <h2>Your Marketplace</h2>
+
+        <!-- Search bar -->
+        <input type="text" id="searchInput" placeholder="Search books..." oninput="searchBooks()" />
+
+        <h3>Books for Sale:</h3>
+        <div class="book-listings" id="bookListings"></div> <!-- Dynamic book cards -->
+
+        <button onclick="openPostBookForm()">Post a New Book</button>
+
+        <!-- Add New Book Modal -->
+        <div id="postBookModal" class="modal">
+            <div class="modal-content">
+                <h3>Post a New Book</h3>
+                <input type="text" id="newBookTitle" placeholder="Book Title" />
+                <input type="text" id="newBookAuthor" placeholder="Author" />
+                <input type="number" id="newBookPrice" placeholder="Price" />
+                <select id="newBookCondition">
+                    <option value="new">New</option>
+                    <option value="used">Used</option>
+                </select>
+                <input type="file" id="newBookImage" accept="image/*" />
+                <button onclick="postBook()">Post Book</button>
+                <button onclick="closePostBookForm()">Cancel</button>
+            </div>
+        </div>
+
+        <h3>External Books:</h3>
+        <div class="external-books" id="externalBooks"></div> <!-- External links to books -->
+    </div>
+</div>
+
+<!-- Contact Seller Modal -->
+<div id="contactModal" class="modal">
+    <div class="modal-content">
+        <h3>Contact Seller</h3>
+        <textarea id="messageContent" placeholder="Enter your message"></textarea>
+        <button onclick="sendMessage()">Send Message</button>
+        <button onclick="closeContactModal()">Close</button>
+    </div>
+</div>
+
+<script>
+    // Mocked login user credentials
+    const users = { "Ahmed": "2210182" };
+
+    // Load books from localStorage or use default sample books
+    let sampleBooks = JSON.parse(localStorage.getItem("bookData")) || [
+        { title: "The Great Gatsby", author: "F. Scott Fitzgerald", price: "10", condition: "used", image: "images/The Great Gatsby.jpeg" },
+        { title: "1984", author: "George Orwell", price: "8", condition: "new", image: "images/1984.jpg" },
+    ];
+
+    // External books mock data with links
+    const externalBooksMock = [
+        { title: "Introduction to Algorithms", author: "Thomas H. Cormen", price: "$33", image: "images/Introduction_to_Algorithms.jpg", amazonLink: "https://www.amazon.com/Introduction-Algorithms-Thomas-H-Cormen/dp/0262033844" },
+        { title: "Clean Code", author: "Robert C. Martin", price: "$25", image: "images/Clean Code.jpeg", googleLink: "https://www.google.iq/books/edition/Clean_Code/_i6bDeoCQzsC?hl=en" },
+    ];
+
+    // Login function checks username and password against users object
+    function login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        if (users[username] === password) {
+            localStorage.setItem("isLoggedIn", "true");
+            document.getElementById("loginSection").style.display = "none";
+            document.getElementById("bookListingsSection").style.display = "block";
+            loadBookListings();
+        } else {
+            document.getElementById("loginMessage").style.display = "block";
+        }
+    }
+
+    // Load book listings dynamically
+    function loadBookListings() {
+        const listingsContainer = document.getElementById("bookListings");
+        listingsContainer.innerHTML = "";
+
+        sampleBooks.forEach((book, index) => {
+            const bookCard = document.createElement("div");
+            bookCard.classList.add("listing");
+
+            // Book card inner HTML with title, author, price, condition, and buttons
+            bookCard.innerHTML =
+                `<img src="${book.image}" alt="Book Cover" />
+                <h3>${book.title}</h3>
+                <p>${book.author}</p>
+                <p>$${book.price} – ${book.condition}</p>
+                <button onclick="openContactSellerModal()">Contact Seller</button>
+                <button onclick="editBook(${index})">Edit</button>
+                <button onclick="deleteBook(${index})">Delete</button>`; // Delete button added
+
+            listingsContainer.appendChild(bookCard);
+        });
+
+        localStorage.setItem("bookData", JSON.stringify(sampleBooks));
+        loadExternalBooks();
+    }
+
+    // Load external books with logos linking to external sources
+    function loadExternalBooks() {
+        const externalBooksContainer = document.getElementById("externalBooks");
+        externalBooksContainer.innerHTML = "";
+
+        externalBooksMock.forEach(book => {
+            const bookCard = document.createElement("div");
+            bookCard.classList.add("external-book");
+            bookCard.innerHTML =
+                `<img src="${book.image}" alt="Book Cover" />
+                <h3>${book.title}</h3>
+                <p>${book.author}</p>
+                <p>${book.price}</p>
+                <div class="logo-btn">
+                    ${book.amazonLink ? `<a href="${book.amazonLink}" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon Logo"></a>` : ''}
+                    ${book.googleLink ? `<a href="${book.googleLink}" target="_blank"><img src="images/google books logo.png" alt="Google Books Logo"></a>` : ''}
+                </div>`;
+            externalBooksContainer.appendChild(bookCard);
+        });
+    }
+
+    // Open modal for posting a new book
+    function openPostBookForm() {
+        document.getElementById("postBookModal").style.display = "flex";
+    }
+
+    // Close new book modal
+    function closePostBookForm() {
+        document.getElementById("postBookModal").style.display = "none";
+    }
+
+    // Post new book to sampleBooks and update localStorage
+    function postBook() {
+        const title = document.getElementById("newBookTitle").value;
+        const author = document.getElementById("newBookAuthor").value;
+        const price = document.getElementById("newBookPrice").value;
+        const condition = document.getElementById("newBookCondition").value;
+        const imageFile = document.getElementById("newBookImage").files[0];
+        const imageURL = imageFile ? URL.createObjectURL(imageFile) : "images/placeholder.jpg";
+
+        if (title && author && price && condition) {
+            sampleBooks.push({ title, author, price, condition, image: imageURL });
+            localStorage.setItem("bookData", JSON.stringify(sampleBooks));
+            loadBookListings();
+            closePostBookForm();
+        }
+    }
+
+    // Open contact seller modal
+    function openContactSellerModal() {
+        document.getElementById("contactModal").style.display = "flex";
+    }
+
+    // Close contact seller modal
+    function closeContactModal() {
+        document.getElementById("contactModal").style.display = "none";
+    }
+
+    // Send message function with alert confirmation
+    function sendMessage() {
+        const message = document.getElementById("messageContent").value;
+        if (message) {
+            alert("Message sent to seller: " + message);
+            closeContactModal();
+        }
+    }
+
+    // Search books by title or author, case insensitive
+    function searchBooks() {
+        const query = document.getElementById("searchInput").value.toLowerCase();
+        const filtered = sampleBooks.filter(book => book.title.toLowerCase().includes(query) || book.author.toLowerCase().includes(query));
+        const listingsContainer = document.getElementById("bookListings");
+        listingsContainer.innerHTML = "";
+        filtered.forEach((book, index) => {
+            const bookCard = document.createElement("div");
+            bookCard.classList.add("listing");
+            bookCard.innerHTML =
+                `<img src="${book.image}" alt="Book Cover" />
+                <h3>${book.title}</h3>
+                <p>${book.author}</p>
+                <p>$${book.price} – ${book.condition}</p>
+                <button onclick="openContactSellerModal()">Contact Seller</button>
+                <button onclick="editBook(${index})">Edit</button>
+                <button onclick="deleteBook(${index})">Delete</button>`;
+            listingsContainer.appendChild(bookCard);
+        });
+    }
+
+    // Edit book details: fill modal inputs, remove old entry, open modal
+    function editBook(index) {
+        const book = sampleBooks[index];
+        document.getElementById("newBookTitle").value = book.title;
+        document.getElementById("newBookAuthor").value = book.author;
+        document.getElementById("newBookPrice").value = book.price;
+        document.getElementById("newBookCondition").value = book.condition;
+        openPostBookForm();
+        sampleBooks.splice(index, 1);
+    }
+
+    // Delete book with confirmation alert
+    function deleteBook(index) {
+        // Confirm deletion
+        if (confirm("Are you sure you want to delete this book? This action cannot be undone.")) {
+            sampleBooks.splice(index, 1);
+            localStorage.setItem("bookData", JSON.stringify(sampleBooks));
+            loadBookListings();
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!-- Post a New Book Modal -->
+<div id="postBookModal" class="modal">
+    <div class="modal-content">
+        <h3>Post a New Book</h3>
+        <form action="dashboard.php" method="POST" enctype="multipart/form-data">
+            <input type="text" name="book_title" placeholder="Book Title" required />
+            <input type="text" name="book_author" placeholder="Author" required />
+            <input type="number" name="book_price" placeholder="Price" required />
+            <select name="book_condition">
+                <option value="new">New</option>
+                <option value="used">Used</option>
+            </select>
+            <input type="file" name="book_image" accept="image/*" required />
+            <button type="submit" name="post_book">Post Book</button>
+            <button type="button" onclick="closePostBookForm()">Cancel</button>
+        </form>
+    </div>
+</div>
